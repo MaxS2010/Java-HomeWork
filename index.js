@@ -22,7 +22,6 @@ app.get('/coffee', (req, res) => {
     })
 })
 
-app.listen(HOST, PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
+const server = app.listen(PORT, HOST, () => {
+    console.log(`Server is running on http://localhost:${server.address().port}`)
 })
-        
