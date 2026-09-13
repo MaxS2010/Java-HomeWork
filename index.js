@@ -1,27 +1,24 @@
 import express from 'express'
-import moment from 'moment'
-
-function getCurrentDate() {
-    return moment().format('YYYY-MM-DD HH:mm:ss')
-}
 
 const app = express()
 
 const HOST = "localhost"
 const PORT = 8000
 
-app.get('/timestamp', (req, res) => {
-    res.json({
-        time: getCurrentDate()
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: "ok"
     })
 })
 
-app.get('/coffee', (req, res) => {
-    res.status(418).json({
-    message: "No coffee!"
+app.get('/stats', (req, res) => {
+    res.status(200).json({
+        uptime: Math.floor(process.uptime()),
+        nodeVersion: process.version,
+        timestamp: new Date().toISOString()
     })
 })
 
 const server = app.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://localhost:${server.address().port}`)
+    console.log(`Server is running on http://${HOST}:${PORT}`)
 })
