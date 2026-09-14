@@ -1,29 +1,61 @@
 import express from 'express'
+import {products, createTestProducts} from './utils/products.js'
+import {users, createTestUsers} from './utils/users.js'
 
 const app = express()
 
 const HOST = "localhost"
 const PORT = 8000
 
-let users = []
-let n_user = 0
-
-function addUser(name, password) {
-    users.push({
-        id: n_user,
-        name: name,
-        password: password
-    })
-    n_user++
-}
-
-function createTestUsers(count) {
-    for (let index = 0; index < count; index++) {
-        addUser(`User${index}`, `password${index}`)
-    }
-}
-
+createTestProducts()
 createTestUsers(10)
+
+// ------------- Products ---------------
+
+app.get("/products", (req, res) => {
+    const {take, category} = req.query
+    let filteredProducts = products
+
+    if (category) {
+        filteredProducts = filteredProducts.filter(product => product.category === category)
+    }
+
+    if (take !== undefined) {
+        const takeInt = Number(take)
+
+        if (!Number.isInteger(takeInt) || takeInt < 0) {
+            return res.status(400).json({
+                message: "Invalid 'take' parameter. It must be a non-negative integer."
+            })
+        }
+
+        filteredProducts = filteredProducts.slice(0, takeInt)
+    }
+
+    res.status(200).json(filteredProducts)
+})
+
+app.get("/products/:id", (req, res) => {
+    const productId = Number(req.params.id)
+
+    if (!Number.isInteger(productId) || productId < 0) {
+        return res.status(400).json({
+            message: "Invalid 'id' parameter. It must be a non-negative integer."
+        })
+    }
+
+    const productFound = products.find(product => product.id === productId)
+
+    if (!productFound) {
+        return res.status(404).json({
+            message: `Product with id ${req.params.id} not found.`
+        })
+    }
+
+    res.status(200).json(productFound)
+})
+
+// ------------- User ---------------
 
 app.get("/users", (req, res) => {
     const {take} = req.query
@@ -67,6 +99,7 @@ app.get("/users/:id", (req, res) => {
     res.status(200).json(userFound)
 })
 
+// ------------- Info ---------------
 
 app.get('/health', (req, res) => {
     res.status(200).json({
