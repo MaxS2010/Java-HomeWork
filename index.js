@@ -14,9 +14,20 @@ createTestUsers(10)
 
 app.get("/products", (req, res) => {
     const {take, category} = req.query
-    let filteredProducts = products
 
-    if (category) {
+    if (take === undefined && category === undefined) {
+        return res.status(200).json(products)
+    }
+
+    let filteredProducts = [...products]
+
+    if (category !== undefined) {
+        if (typeof category !== "string" || category.trim() === "") {
+            return res.status(400).json({
+                message: "Invalid 'category' parameter. It must be a non-empty string."
+            })
+        }
+
         filteredProducts = filteredProducts.filter(product => product.category === category)
     }
 
@@ -32,7 +43,7 @@ app.get("/products", (req, res) => {
         filteredProducts = filteredProducts.slice(0, takeInt)
     }
 
-    res.status(200).json(filteredProducts)
+    return res.status(200).json(filteredProducts)
 })
 
 app.get("/products/:id", (req, res) => {
@@ -53,50 +64,6 @@ app.get("/products/:id", (req, res) => {
     }
 
     res.status(200).json(productFound)
-})
-
-// ------------- User ---------------
-
-app.get("/users", (req, res) => {
-    const {take} = req.query
-
-    if (!take) {
-        return res.status(200).json(users)
-    }
-
-    const takeInt = Number(take)
-
-    if (!Number.isInteger(take) || take < 0) {
-        return res.status(400).json({
-            message: "Invalid 'take' parameter. It must be a non-negative integer."
-        })
-    }
-
-    slicedUsers = users.slice(0, take)
-
-    res.status(200).json(slicedUsers)
-})
-
-app.get("/users/:id", (req, res) => {
-    const {id} = req.params
-
-    const userId = Number(id)
-
-    if (!Number.isInteger(userId) || userId < 0) {
-        return res.status(400).json({
-            message: "Invalid 'id' parameter. It must be a non-negative integer."
-        })
-    }
-
-    const userFound = users.find(user => user.id === userId)
-
-    if (!userFound) {
-        return res.status(404).json({
-            message: `User with id ${id} not found.`
-        })
-    }
-
-    res.status(200).json(userFound)
 })
 
 // ------------- Info ---------------
