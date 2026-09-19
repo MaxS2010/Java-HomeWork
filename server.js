@@ -1,5 +1,8 @@
 // import express module
 import express from 'express'
+import {users, createTestUsers} from './utils/users.js'
+
+createTestUsers(10)
 
 // create an express application (like an instance of a class)
 const app = express()
