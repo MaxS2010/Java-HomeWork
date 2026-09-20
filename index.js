@@ -1,14 +1,14 @@
 import express from 'express'
-import {products, createTestProducts} from './utils/products.js'
-import {users, createTestUsers} from './utils/users.js'
+import {products, addProduct, createTestProducts} from './utils/products.js'
 
 const app = express()
 
 const HOST = "localhost"
 const PORT = 8000
 
+app.use(express.json())
+
 createTestProducts()
-createTestUsers(10)
 
 // ------------- Products ---------------
 
@@ -64,6 +64,28 @@ app.get("/products/:id", (req, res) => {
     }
 
     res.status(200).json(productFound)
+})
+
+app.post("/products", (req, res) => {
+    const {name, price, category, image = ""} = req.body ?? {}
+
+    if (typeof name !== "string" || name.trim() === "" || typeof price !== "number" || !Number.isFinite(price) || price <= 0 || typeof category !== "string" || category.trim() === "") {
+        return res.status(422).json({
+            message: "Invalid product data"
+        })
+    }
+
+    if (products.some(product => product.name === name)) {
+        return res.status(409).json({
+            message: "Conflict: a product with this name already exists."
+        })
+    }
+
+    addProduct({name, price, category, image, fail: req.query.fail === "true"})
+        .then(product => res.status(201).json(product))
+        .catch(() => res.status(500).json({
+            message: "Product could not be saved."
+        }))
 })
 
 // ------------- Info ---------------
